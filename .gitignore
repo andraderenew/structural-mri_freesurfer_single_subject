@@ -1,0 +1,9 @@
+.DS_Store
+*.nii
+*.nii.gz
+*.mgz
+*.mgh
+*.img
+data/
+derivatives/
+freesurfer_subjects_ext4.img
