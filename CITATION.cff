@@ -1,0 +1,21 @@
+cff-version: 1.2.0
+title: "Structural MRI cortical reconstruction with FreeSurfer"
+message: "If you use this project, please cite it as below."
+type: software
+authors:
+  - family-names: "Andrade Rey"
+    given-names: "Rene"
+    orcid: "https://orcid.org/0000-0001-5627-579X"
+abstract: "Reproducible single-subject structural MRI workflow using FreeSurfer for cortical reconstruction, subcortical segmentation, regional cortical-thickness, area and volume extraction, and visual quality control."
+license: "MIT"
+repository-code: "https://github.com/andraderenew/structural-mri_freesurfer_single_subject"
+url: "https://github.com/andraderenew/structural-mri_freesurfer_single_subject"
+version: "1.0.0"
+date-released: "2026-07-27"
+keywords:
+  - structural MRI
+  - FreeSurfer
+  - cortical reconstruction
+  - cortical thickness
+  - morphometry
+  - neuroimaging
