@@ -10,9 +10,10 @@ Single-subject cortical reconstruction and morphometry portfolio project.
 ## Software
 - FreeSurfer 7.4.1
 - Ubuntu 22.04.5 LTS
-- Core processing: `recon-all -all`
+- Initial processing command: `recon-all -s sub-01_ses-test -i <T1w.nii.gz> -all -parallel -openmp 8 -noappend`
+- OpenMP configuration verified from `recon-all_complete_sub-01_ses-test.log`: 8 threads
+- The workstation exposed 16 logical CPU threads; 8 OpenMP threads were used for this run
 - Reported runtime on the original workstation: approximately 1.356 hours
-- Exact thread count was not documented; no OpenMP setting is claimed
 
 ## Outputs
 - Subcortical and global volumes
