@@ -10,8 +10,9 @@ Single-subject cortical reconstruction and morphometry portfolio project.
 ## Software
 - FreeSurfer 7.4.1
 - Ubuntu 22.04.5 LTS
-- recon-all -all -parallel -openmp 8
-- Runtime: approximately 1.356 hours
+- Core processing: `recon-all -all`
+- Reported runtime on the original workstation: approximately 1.356 hours
+- Exact thread count was not documented; no OpenMP setting is claimed
 
 ## Outputs
 - Subcortical and global volumes
