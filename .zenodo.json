@@ -9,7 +9,10 @@
   "title": "Structural MRI cortical reconstruction with FreeSurfer",
   "description": "Reproducible single-subject structural MRI workflow using FreeSurfer for cortical reconstruction, subcortical segmentation, regional cortical-thickness, area and volume extraction, and visual quality control. The documented run used recon-all with parallel processing and 8 OpenMP threads.",
   "version": "1.0.1",
+  "upload_type": "software",
   "access_right": "open",
+  "license": "mit",
+  "language": "eng",
   "keywords": [
     "structural MRI",
     "FreeSurfer",
@@ -19,7 +22,12 @@
     "OpenMP",
     "neuroimaging"
   ],
-  "license": "mit",
-  "upload_type": "software",
-  "language": "eng"
+  "notes": "Completed reproducible neuroimaging portfolio workflow.",
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/andraderenew/structural-mri_freesurfer_single_subject",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ]
 }
