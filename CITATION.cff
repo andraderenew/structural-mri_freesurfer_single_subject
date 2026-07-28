@@ -6,16 +6,17 @@ authors:
   - family-names: "Andrade Rey"
     given-names: "Rene"
     orcid: "https://orcid.org/0000-0001-5627-579X"
-abstract: "Reproducible single-subject structural MRI workflow using FreeSurfer for cortical reconstruction, subcortical segmentation, regional cortical-thickness, area and volume extraction, and visual quality control."
+abstract: "Reproducible single-subject structural MRI workflow using FreeSurfer for cortical reconstruction, subcortical segmentation, regional cortical-thickness, area and volume extraction, and visual quality control. The documented run used recon-all with parallel processing and 8 OpenMP threads."
 license: "MIT"
 repository-code: "https://github.com/andraderenew/structural-mri_freesurfer_single_subject"
 url: "https://github.com/andraderenew/structural-mri_freesurfer_single_subject"
-version: "1.0.0"
-date-released: "2026-07-27"
+version: "1.0.1"
+date-released: "2026-07-28"
 keywords:
-  - structural MRI
-  - FreeSurfer
-  - cortical reconstruction
-  - cortical thickness
-  - morphometry
-  - neuroimaging
+  - "structural MRI"
+  - "FreeSurfer"
+  - "cortical reconstruction"
+  - "cortical thickness"
+  - "morphometry"
+  - "OpenMP"
+  - "neuroimaging"

@@ -1,0 +1,25 @@
+{
+  "creators": [
+    {
+      "name": "Andrade Rey, Rene",
+      "orcid": "0000-0001-5627-579X",
+      "type": "ProjectMember"
+    }
+  ],
+  "title": "Structural MRI cortical reconstruction with FreeSurfer",
+  "description": "Reproducible single-subject structural MRI workflow using FreeSurfer for cortical reconstruction, subcortical segmentation, regional cortical-thickness, area and volume extraction, and visual quality control. The documented run used recon-all with parallel processing and 8 OpenMP threads.",
+  "version": "1.0.1",
+  "access_right": "open",
+  "keywords": [
+    "structural MRI",
+    "FreeSurfer",
+    "cortical reconstruction",
+    "cortical thickness",
+    "morphometry",
+    "OpenMP",
+    "neuroimaging"
+  ],
+  "license": "mit",
+  "upload_type": "software",
+  "language": "eng"
+}
