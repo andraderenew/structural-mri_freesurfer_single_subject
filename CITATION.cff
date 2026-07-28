@@ -12,6 +12,7 @@ repository-code: "https://github.com/andraderenew/structural-mri_freesurfer_sing
 url: "https://github.com/andraderenew/structural-mri_freesurfer_single_subject"
 version: "1.0.1"
 date-released: "2026-07-28"
+doi: "10.5281/zenodo.21650423"
 keywords:
   - "structural MRI"
   - "FreeSurfer"
