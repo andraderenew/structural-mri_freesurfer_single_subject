@@ -46,7 +46,7 @@ def require(path: Path) -> Path:
 
 
 def savefig(fig: plt.Figure, path: Path, dpi: int = 180) -> None:
-    fig.savefig(path, dpi=dpi, bbox_inches="tight", facecolor="white")
+    fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=0.20, facecolor="white")
     plt.close(fig)
     if not path.exists() or path.stat().st_size < 10_000:
         raise RuntimeError(f"Figure validation failed: {path}")
@@ -124,7 +124,7 @@ def segmentation_rgba(labels: np.ndarray, lut: dict[int, tuple[float, float, flo
 def render_aseg_multiplanar(t1: np.ndarray, brainmask: np.ndarray, aseg: np.ndarray,
                              lut: dict[int, tuple[float, float, float, float]],
                              vmin: float, vmax: float, out: Path) -> None:
-    fig, axes = plt.subplots(3, 5, figsize=(15.5, 9.3), constrained_layout=True)
+    fig, axes = plt.subplots(3, 5, figsize=(15.5, 9.3), constrained_layout=False)
     for row, (axis, plane) in enumerate(PLANES):
         indices = choose_slices(brainmask, axis, 5)
         for col, idx in enumerate(indices):
@@ -135,13 +135,14 @@ def render_aseg_multiplanar(t1: np.ndarray, brainmask: np.ndarray, aseg: np.ndar
             ax.imshow(segmentation_rgba(seg, lut), origin="lower", interpolation="nearest")
             ax.set_title(f"{plane} · voxel {idx}", fontsize=9)
             ax.axis("off")
+    fig.subplots_adjust(left=0.015, right=0.985, bottom=0.075, top=0.925, wspace=0.08, hspace=0.16)
     fig.suptitle("FreeSurfer anatomical QC — T1 with aseg segmentation", fontsize=15, fontweight="bold")
-    fig.text(0.5, 0.005, "Segmentation colors use FreeSurferColorLUT; overlay is descriptive QC.", ha="center", fontsize=9)
+    fig.text(0.5, 0.025, "Segmentation colors use FreeSurferColorLUT; overlay is descriptive QC.", ha="center", fontsize=9)
     savefig(fig, out)
 
 
 def render_brainmask(t1: np.ndarray, brainmask: np.ndarray, vmin: float, vmax: float, out: Path) -> None:
-    fig, axes = plt.subplots(3, 5, figsize=(15.5, 9.3), constrained_layout=True)
+    fig, axes = plt.subplots(3, 5, figsize=(15.5, 9.3), constrained_layout=False)
     for row, (axis, plane) in enumerate(PLANES):
         indices = choose_slices(brainmask, axis, 5)
         for col, idx in enumerate(indices):
@@ -153,8 +154,9 @@ def render_brainmask(t1: np.ndarray, brainmask: np.ndarray, vmin: float, vmax: f
                 ax.contour(mask2d.astype(float), levels=[0.5], linewidths=1.0)
             ax.set_title(f"{plane} · voxel {idx}", fontsize=9)
             ax.axis("off")
+    fig.subplots_adjust(left=0.015, right=0.985, bottom=0.075, top=0.925, wspace=0.08, hspace=0.16)
     fig.suptitle("FreeSurfer brain extraction QC — brainmask boundary on T1", fontsize=15, fontweight="bold")
-    fig.text(0.5, 0.005, "Boundary should track the intracranial brain without systematic tissue loss or extracranial inclusion.", ha="center", fontsize=9)
+    fig.text(0.5, 0.025, "Boundary should track the intracranial brain without systematic tissue loss or extracranial inclusion.", ha="center", fontsize=9)
     savefig(fig, out)
 
 
@@ -202,6 +204,18 @@ def triangle_plane_segments(vertices: np.ndarray, faces: np.ndarray, axis: int, 
     return segments
 
 
+def choose_surface_slices(vertices: np.ndarray, axis: int, n: int = 4) -> list[int]:
+    """Choose QC planes from the cortical surface extent."""
+    vals = np.asarray(vertices[:, axis], dtype=float)
+    vals = vals[np.isfinite(vals)]
+
+    if vals.size == 0:
+        raise RuntimeError("No valid surface coordinates available for slice selection")
+
+    lo, hi = np.percentile(vals, [8.0, 92.0])
+    return [int(round(v)) for v in np.linspace(lo, hi, n)]
+
+
 def render_surface_overlay(t1_img: nib.spatialimages.SpatialImage, t1: np.ndarray, brainmask: np.ndarray,
                            vmin: float, vmax: float, subj: Path, out: Path) -> None:
     surfaces: list[tuple[str, str, np.ndarray, np.ndarray]] = []
@@ -210,9 +224,11 @@ def render_surface_overlay(t1_img: nib.spatialimages.SpatialImage, t1: np.ndarra
             verts, faces = surface_vertices_in_voxels(require(subj / "surf" / f"{hemi}.{kind}"), t1_img)
             surfaces.append((f"{hemi}.{kind}", color, verts, faces))
 
-    fig, axes = plt.subplots(3, 4, figsize=(14.2, 9.2), constrained_layout=True)
+    cortical_vertices = np.vstack([entry[2] for entry in surfaces])
+
+    fig, axes = plt.subplots(3, 4, figsize=(14.2, 9.2), constrained_layout=False)
     for row, (axis, plane) in enumerate(PLANES):
-        indices = choose_slices(brainmask, axis, 4)
+        indices = choose_surface_slices(cortical_vertices, axis, 4)
         for col, idx in enumerate(indices):
             ax = axes[row, col]
             ax.imshow(plane_slice(t1, axis, idx), cmap="gray", origin="lower", vmin=vmin, vmax=vmax, interpolation="nearest")
@@ -222,8 +238,9 @@ def render_surface_overlay(t1_img: nib.spatialimages.SpatialImage, t1: np.ndarra
                     ax.add_collection(LineCollection(segs, colors=color, linewidths=0.65, alpha=0.9))
             ax.set_title(f"{plane} · voxel {idx}", fontsize=9)
             ax.axis("off")
+    fig.subplots_adjust(left=0.015, right=0.985, bottom=0.075, top=0.925, wspace=0.08, hspace=0.16)
     fig.suptitle("FreeSurfer cortical-surface QC — white and pial boundaries", fontsize=15, fontweight="bold")
-    fig.text(0.5, 0.005, "Blue = white surface; red = pial surface. Curves are exact mesh/slice intersections.", ha="center", fontsize=9)
+    fig.text(0.5, 0.025, "Blue = white surface; red = pial surface. Curves are exact mesh/slice intersections.", ha="center", fontsize=9)
     savefig(fig, out)
 
 
@@ -315,7 +332,7 @@ def render_dashboard(subj: Path, out: Path) -> None:
     x_lh = np.array([lh_regions[k] for k in common])
     y_rh = np.array([rh_regions[k] for k in common])
 
-    fig = plt.figure(figsize=(15.5, 10.2), constrained_layout=True)
+    fig = plt.figure(figsize=(15.5, 10.2), constrained_layout=False)
     gs = fig.add_gridspec(2, 2)
 
     ax = fig.add_subplot(gs[0, 0])
@@ -357,7 +374,7 @@ def render_dashboard(subj: Path, out: Path) -> None:
     w = 0.38
     ax.bar(xx - w/2, left, width=w, label="Left")
     ax.bar(xx + w/2, right, width=w, label="Right")
-    ax.set_xticks(xx, names, rotation=32, ha="right")
+    ax.set_xticks(xx, names, rotation=25, ha="right")
     ax.set_ylabel("Volume (mL)")
     ax.set_title("C. Selected bilateral aseg volumes")
     ax.legend(frameon=False)
@@ -371,23 +388,27 @@ def render_dashboard(subj: Path, out: Path) -> None:
     ax.set_ylabel("RH regional thickness (mm)")
     ax.set_title("D. Desikan–Killiany regional thickness symmetry")
     diffs = np.abs(x_lh - y_rh)
-    for idx in np.argsort(diffs)[-5:]:
+    for idx in np.argsort(diffs)[-4:]:
         ax.annotate(common[idx], (x_lh[idx], y_rh[idx]), fontsize=7, xytext=(3, 3), textcoords="offset points")
 
+    fig.subplots_adjust(left=0.08, right=0.98, bottom=0.115, top=0.92, wspace=0.16, hspace=0.22)
     fig.suptitle("FreeSurfer single-subject morphometry and topology dashboard", fontsize=16, fontweight="bold")
-    fig.text(0.5, 0.005, "Descriptive single-subject QC; no normative or group inference is implied.", ha="center", fontsize=9)
+    fig.text(0.5, 0.025, "Descriptive single-subject QC; no normative or group inference is implied.", ha="center", fontsize=9)
     savefig(fig, out)
 
 
 def set_3d_equal(ax, verts: np.ndarray) -> None:
     mins = verts.min(axis=0)
     maxs = verts.max(axis=0)
-    center = (mins + maxs) / 2.0
-    radius = float(np.max(maxs - mins) / 2.0)
-    ax.set_xlim(center[0] - radius, center[0] + radius)
-    ax.set_ylim(center[1] - radius, center[1] + radius)
-    ax.set_zlim(center[2] - radius, center[2] + radius)
-    ax.set_box_aspect((1, 1, 1))
+    spans = np.maximum(maxs - mins, 1e-6)
+    pad = spans * 0.025
+
+    ax.set_xlim(mins[0] - pad[0], maxs[0] + pad[0])
+    ax.set_ylim(mins[1] - pad[1], maxs[1] + pad[1])
+    ax.set_zlim(mins[2] - pad[2], maxs[2] + pad[2])
+
+    # Preserve anatomical proportions instead of forcing a large cubic box.
+    ax.set_box_aspect(spans, zoom=1.28)
     ax.set_axis_off()
 
 
@@ -430,7 +451,7 @@ def render_aparc_surface(subj: Path, out: Path) -> None:
         ("rh", "RH medial", 180),
         ("rh", "RH lateral", 0),
     ]
-    fig = plt.figure(figsize=(15.5, 8.2), constrained_layout=True)
+    fig = plt.figure(figsize=(13.6, 8.6), constrained_layout=False)
     for i, (hemi, title, azim) in enumerate(views, start=1):
         ax = fig.add_subplot(2, 2, i, projection="3d")
         verts, faces, fcolors = data[hemi]
@@ -453,7 +474,7 @@ def render_thickness_surface(subj: Path, out: Path) -> None:
     pool = np.concatenate(all_positive)
     vmin, vmax = np.percentile(pool, [2, 98])
     norm = colors.Normalize(vmin=float(vmin), vmax=float(vmax))
-    cmap = cm.get_cmap("viridis")
+    cmap = matplotlib.colormaps["viridis"]
 
     views = [
         ("lh", "LH lateral", 180),
@@ -461,7 +482,7 @@ def render_thickness_surface(subj: Path, out: Path) -> None:
         ("rh", "RH medial", 180),
         ("rh", "RH lateral", 0),
     ]
-    fig = plt.figure(figsize=(15.5, 8.6), constrained_layout=True)
+    fig = plt.figure(figsize=(13.6, 8.8), constrained_layout=False)
     for i, (hemi, title, azim) in enumerate(views, start=1):
         ax = fig.add_subplot(2, 2, i, projection="3d")
         verts, faces, thick = data[hemi]
@@ -473,10 +494,12 @@ def render_thickness_surface(subj: Path, out: Path) -> None:
         ax.set_title(title, fontsize=11)
     sm = cm.ScalarMappable(norm=norm, cmap=cmap)
     sm.set_array([])
-    cbar = fig.colorbar(sm, ax=fig.axes, shrink=0.55, pad=0.01)
+    cax = fig.add_axes([0.925, 0.285, 0.018, 0.43])
+    cbar = fig.colorbar(sm, cax=cax)
     cbar.set_label("Cortical thickness (mm)")
+    fig.subplots_adjust(left=0.01, right=0.885, bottom=0.07, top=0.92, wspace=0.015, hspace=0.06)
     fig.suptitle("FreeSurfer cortical thickness on inflated surfaces", fontsize=16, fontweight="bold")
-    fig.text(0.5, 0.01, f"Shared display scale across hemispheres: {vmin:.2f}–{vmax:.2f} mm (2nd–98th percentile of positive vertices).", ha="center", fontsize=9)
+    fig.text(0.46, 0.025, f"Shared display scale across hemispheres: {vmin:.2f}–{vmax:.2f} mm (2nd–98th percentile of positive vertices).", ha="center", fontsize=9)
     savefig(fig, out, dpi=160)
 
 
