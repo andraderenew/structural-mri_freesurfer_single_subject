@@ -25,7 +25,7 @@ recon-all \
   -parallel \
   -openmp 8 \
   -noappend
-b``
+```
 
 The completed reconstruction is documented by `reports/recon-all_complete_sub-01_ses-test.log`.
 
