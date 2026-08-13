@@ -4,7 +4,7 @@ Reproducible single-subject structural MRI project demonstrating FreeSurfer cort
 
 ## Dataset
 
-- OpenNeuro: `dk000114`
+- OpenNeuro: `ds000114`
 - Participant: `sub-01`
 - Session: `ses-test`
 - Structural image: T1-weighted MRI
@@ -38,7 +38,7 @@ The completed subject contains the expected final FreeSurfer products, including
 - left/right white surfaces
 - left/right pial surfaces
 - left/right cortical thickness
-- Desikan-Killiany `apar` annotations
+- Desikan-Killiany `aparc` annotations
 - `aseg.stats`
 - left/right `aparc.stats`
 
