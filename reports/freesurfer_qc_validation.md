@@ -20,6 +20,8 @@ recon-all -s sub-01_ses-test finished without error
 
 The successful completion occurred on 23 July 2026.
 
+The repository preserves a full path-sanitized copy of the canonical `recon-all.log`. Before path sanitization, the archived log was byte-identical to the canonical ext4 log (28,922 lines; SHA256 `683cbe4bfc0b8afe9204ed6491fd160aae9ab9d4ebe4a90aae87ca6157e933a8`). Only local filesystem prefixes are replaced in the public copy.
+
 ## Canonical outputs
 
 The completed FreeSurfer subject was verified to contain:
@@ -95,6 +97,8 @@ table7_rh_cortical_volume.tsv        EXACT_MATCH=YES
 
 This establishes direct provenance between the public quantitative tables and the completed canonical FreeSurfer reconstruction.
 
+The archived public `aseg` statistics preserve the canonical FreeSurfer quantitative content. The local FreeSurfer installation prefix is replaced by `<FREESURFER_HOME>`, and trailing whitespace is normalized on the two affected metadata lines; quantitative values are unchanged.
+
 ## Selected morphometry
 
 From the canonical FreeSurfer statistics:
@@ -141,3 +145,15 @@ The final figures were visually reviewed after iterative layout correction.
 This is a single-subject processing and QC project.
 
 The morphometric measurements are descriptive. No normative reference comparison, diagnostic classification, or group-level statistical inference is claimed.
+
+## Cross-audit correction — 16 August 2026
+
+The canonical completed reconstruction was re-verified on the ext4 volume `FS_SUBJECTS`, which supports the symbolic links required by FreeSurfer. Earlier failed runs on exFAT are retained in the canonical log, followed by the successful run on 23 July 2026.
+
+The canonical T1 has NiBabel axis codes `('L', 'I', 'A')`. The QC renderer previously assigned anatomical plane names directly to voxel axes, causing the labels for voxel axes 1 and 2 to be interchanged. The renderer now derives plane names from the image affine:
+
+- voxel axis 0: Sagittal
+- voxel axis 1: Axial
+- voxel axis 2: Coronal
+
+The three affected multiplanar figures (aseg, brainmask, and white/pial surface QC) were regenerated from the canonical completed subject and visually reviewed. The cortical parcellation, cortical-thickness, and morphometry/topology figures remained byte-identical.

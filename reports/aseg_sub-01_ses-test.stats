@@ -2,7 +2,7 @@
 # 
 # generating_program mri_segstats
 # cvs_version 7.4.1
-# cmdline mri_segstats --seed 1234 --seg mri/aseg.mgz --sum stats/aseg.stats --pv mri/norm.mgz --empty --brainmask mri/brainmask.mgz --brain-vol-from-seg --excludeid 0 --excl-ctxgmwm --supratent --subcortgray --in mri/norm.mgz --in-intensity-name norm --in-intensity-units MR --etiv --surf-wm-vol --surf-ctx-vol --totalgray --euler --ctab /home/andraderenew/Downloads/freesurfer/ASegStatsLUT.txt --subject sub-01_ses-test 
+# cmdline mri_segstats --seed 1234 --seg mri/aseg.mgz --sum stats/aseg.stats --pv mri/norm.mgz --empty --brainmask mri/brainmask.mgz --brain-vol-from-seg --excludeid 0 --excl-ctxgmwm --supratent --subcortgray --in mri/norm.mgz --in-intensity-name norm --in-intensity-units MR --etiv --surf-wm-vol --surf-ctx-vol --totalgray --euler --ctab <FREESURFER_HOME>/ASegStatsLUT.txt --subject sub-01_ses-test
 # sysname  Linux
 # hostname andraderenew
 # machine  x86_64
@@ -34,7 +34,7 @@
 # Measure EstimatedTotalIntraCranialVol, eTIV, Estimated Total Intracranial Volume, 1148761.753772, mm^3
 # SegVolFile mri/aseg.mgz 
 # SegVolFileTimeStamp  2026/07/23 19:21:02 
-# ColorTable /home/andraderenew/Downloads/freesurfer/ASegStatsLUT.txt 
+# ColorTable <FREESURFER_HOME>/ASegStatsLUT.txt
 # ColorTableTimeStamp 2023/06/14 05:39:07 
 # InVolFile  mri/norm.mgz 
 # InVolFileTimeStamp  2026/07/23 18:11:01 

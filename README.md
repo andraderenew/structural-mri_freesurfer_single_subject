@@ -27,7 +27,7 @@ recon-all \
   -noappend
 ```
 
-The completed reconstruction is documented by `reports/recon-all_complete_sub-01_ses-test.log`.
+A path-sanitized full copy of the canonical `recon-all.log` is preserved in `reports/recon-all_complete_sub-01_ses-test.log`; the detailed reconstruction and QC audit is documented in `reports/freesurfer_qc_validation.md`.
 
 ## Reconstruction validation
 
@@ -107,6 +107,12 @@ Selected global measures:
 | Mean cortical thickness, RH | 2.15459 mm |
 | White surface area, LH | 695.776 cm² |
 | White surface area, RH | 697.659 cm² |
+
+## Portable reconstruction wrapper
+
+`scripts/run_recon_all.sh` is portable and does not contain user-specific filesystem paths. Runtime locations can be supplied with `FREESURFER_HOME`, `FS_LICENSE`, `FS_PROJECT_ROOT`, `FS_T1`, `FS_SUBJECT`, `SUBJECTS_DIR`, and `FS_THREADS`.
+
+FreeSurfer subjects must be stored on a filesystem supporting POSIX symbolic links. The canonical completed reconstruction for this project was therefore run on ext4 rather than directly on exFAT.
 
 ## Reproducible QC renderer
 
