@@ -24,11 +24,26 @@ from nibabel.freesurfer.io import read_annot, read_geometry, read_morph_data
 import numpy as np
 
 
-PLANES = [
-    (0, "Sagittal"),
-    (1, "Coronal"),
-    (2, "Axial"),
-]
+def planes_from_affine(affine: np.ndarray) -> list[tuple[int, str]]:
+    planes: list[tuple[int, str]] = []
+    for axis, code in enumerate(nib.aff2axcodes(affine)):
+        if code in ("L", "R"):
+            plane = "Sagittal"
+        elif code in ("A", "P"):
+            plane = "Coronal"
+        elif code in ("S", "I"):
+            plane = "Axial"
+        else:
+            raise RuntimeError(f"Unknown anatomical axis code: {code}")
+        planes.append((axis, plane))
+
+    names = {name for _, name in planes}
+    if names != {"Sagittal", "Coronal", "Axial"}:
+        raise RuntimeError(
+            f"Could not derive unique anatomical planes from affine: {planes}"
+        )
+
+    return planes
 
 
 def parse_args() -> argparse.Namespace:
@@ -121,11 +136,11 @@ def segmentation_rgba(labels: np.ndarray, lut: dict[int, tuple[float, float, flo
     return out
 
 
-def render_aseg_multiplanar(t1: np.ndarray, brainmask: np.ndarray, aseg: np.ndarray,
+def render_aseg_multiplanar(planes: list[tuple[int, str]], t1: np.ndarray, brainmask: np.ndarray, aseg: np.ndarray,
                              lut: dict[int, tuple[float, float, float, float]],
                              vmin: float, vmax: float, out: Path) -> None:
     fig, axes = plt.subplots(3, 5, figsize=(15.5, 9.3), constrained_layout=False)
-    for row, (axis, plane) in enumerate(PLANES):
+    for row, (axis, plane) in enumerate(planes):
         indices = choose_slices(brainmask, axis, 5)
         for col, idx in enumerate(indices):
             ax = axes[row, col]
@@ -141,9 +156,9 @@ def render_aseg_multiplanar(t1: np.ndarray, brainmask: np.ndarray, aseg: np.ndar
     savefig(fig, out)
 
 
-def render_brainmask(t1: np.ndarray, brainmask: np.ndarray, vmin: float, vmax: float, out: Path) -> None:
+def render_brainmask(planes: list[tuple[int, str]], t1: np.ndarray, brainmask: np.ndarray, vmin: float, vmax: float, out: Path) -> None:
     fig, axes = plt.subplots(3, 5, figsize=(15.5, 9.3), constrained_layout=False)
-    for row, (axis, plane) in enumerate(PLANES):
+    for row, (axis, plane) in enumerate(planes):
         indices = choose_slices(brainmask, axis, 5)
         for col, idx in enumerate(indices):
             ax = axes[row, col]
@@ -216,7 +231,7 @@ def choose_surface_slices(vertices: np.ndarray, axis: int, n: int = 4) -> list[i
     return [int(round(v)) for v in np.linspace(lo, hi, n)]
 
 
-def render_surface_overlay(t1_img: nib.spatialimages.SpatialImage, t1: np.ndarray, brainmask: np.ndarray,
+def render_surface_overlay(planes: list[tuple[int, str]], t1_img: nib.spatialimages.SpatialImage, t1: np.ndarray, brainmask: np.ndarray,
                            vmin: float, vmax: float, subj: Path, out: Path) -> None:
     surfaces: list[tuple[str, str, np.ndarray, np.ndarray]] = []
     for hemi in ("lh", "rh"):
@@ -227,7 +242,7 @@ def render_surface_overlay(t1_img: nib.spatialimages.SpatialImage, t1: np.ndarra
     cortical_vertices = np.vstack([entry[2] for entry in surfaces])
 
     fig, axes = plt.subplots(3, 4, figsize=(14.2, 9.2), constrained_layout=False)
-    for row, (axis, plane) in enumerate(PLANES):
+    for row, (axis, plane) in enumerate(planes):
         indices = choose_surface_slices(cortical_vertices, axis, 4)
         for col, idx in enumerate(indices):
             ax = axes[row, col]
@@ -562,6 +577,11 @@ def main() -> None:
     t1 = np.asanyarray(t1_img.dataobj)
     brainmask = np.asanyarray(brain_img.dataobj)
     aseg = np.asanyarray(aseg_img.dataobj)
+    planes = planes_from_affine(t1_img.affine)
+    print(
+        "ANATOMICAL_PLANES="
+        + ",".join(f"{axis}:{plane}" for axis, plane in planes)
+    )
     if t1.shape[:3] != brainmask.shape[:3] or t1.shape[:3] != aseg.shape[:3]:
         raise RuntimeError("T1, brainmask, and aseg shapes do not match")
     if not np.all(np.isfinite(t1)):
@@ -571,19 +591,19 @@ def main() -> None:
     lut = parse_freesurfer_lut(require(args.freesurfer_home / "FreeSurferColorLUT.txt"))
 
     render_aseg_multiplanar(
-        t1, brainmask, aseg, lut, vmin, vmax,
+        planes, t1, brainmask, aseg, lut, vmin, vmax,
         figdir / "freesurfer_aseg_multiplanar_qc_final.png",
     )
     print("WROTE freesurfer_aseg_multiplanar_qc_final.png")
 
     render_brainmask(
-        t1, brainmask, vmin, vmax,
+        planes, t1, brainmask, vmin, vmax,
         figdir / "freesurfer_brainmask_qc_final.png",
     )
     print("WROTE freesurfer_brainmask_qc_final.png")
 
     render_surface_overlay(
-        t1_img, t1, brainmask, vmin, vmax, subj,
+        planes, t1_img, t1, brainmask, vmin, vmax, subj,
         figdir / "freesurfer_white_pial_multiplanar_qc_final.png",
     )
     print("WROTE freesurfer_white_pial_multiplanar_qc_final.png")
